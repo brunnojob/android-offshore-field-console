@@ -10,51 +10,71 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.room.Room
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private val database by lazy { Room.databaseBuilder(applicationContext, FieldDatabase::class.java, "field-console.db").build() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme { FieldConsoleScreen() } }
+        setContent { MaterialTheme { FieldConsoleScreen(FieldRepository(database)) } }
     }
 }
 
 @Composable
-fun FieldConsoleScreen() {
-    val tasks = remember {
-        mutableStateListOf(
-            "Confirm isolation and permit" to false,
-            "Inspect pump seal and coupling" to false,
-            "Record pressure and vibration" to false,
-            "Attach equipment photo reference" to false
-        )
-    }
-    var assetCode by remember { mutableStateOf("RF:PUMP-204") }
-    var status by remember { mutableStateOf("Offline-ready · 0 pending events") }
-    val completed = tasks.count { it.second }
-    Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("FIELD CONSOLE", style = MaterialTheme.typography.headlineMedium)
-        Text("Device: offline · local queue available")
-        OutlinedTextField(assetCode, { assetCode = it }, label = { Text("Equipment QR / asset tag") }, modifier = Modifier.fillMaxWidth())
-        Text("Inspection progress: $completed of ${tasks.size}")
+fun FieldConsoleScreen(repository: FieldRepository) {
+    val scope = rememberCoroutineScope()
+    val tasks = remember { listOf(ChecklistTask("isolation", "Confirmar isolamento e autorização", true), ChecklistTask("seal", "Inspecionar vedação e acoplamento", true), ChecklistTask("readings", "Registrar medições", true), ChecklistTask("evidence", "Conferir referências de evidência", true)) }
+    val completed = remember { mutableStateMapOf<String, Boolean>() }
+    var asset by remember { mutableStateOf("") }
+    var operator by remember { mutableStateOf("") }
+    var evidence by remember { mutableStateOf("") }
+    var token by remember { mutableStateOf("") }
+    var status by remember { mutableStateOf("") }
+    var pending by remember { mutableIntStateOf(0) }
+    var busy by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { pending = repository.pending().size }
+    Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("Field Console", style = MaterialTheme.typography.headlineMedium)
+        OutlinedTextField(asset, { asset = it }, label = { Text("Ativo / QR") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(operator, { operator = it }, label = { Text("Operador") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(evidence, { evidence = it }, label = { Text("Referência da evidência / medições") }, modifier = Modifier.fillMaxWidth())
         LazyColumn(Modifier.weight(1f)) {
-            items(tasks.indices.toList()) { index ->
-                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(tasks[index].first, modifier = Modifier.weight(1f).padding(end = 8.dp))
-                    Checkbox(checked = tasks[index].second, onCheckedChange = { checked -> tasks[index] = tasks[index].first to checked })
-                }
-            }
+            items(tasks) { task -> Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(task.label, modifier = Modifier.weight(1f))
+                Checkbox(completed[task.id] == true, { completed[task.id] = it })
+            } }
         }
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            enabled = completed == tasks.size,
-            onClick = {
-                status = try {
-                    "Queued locally: ${parseAssetTag(assetCode)}"
-                } catch (_: IllegalArgumentException) {
-                    "Invalid equipment tag"
-                }
+        Button(enabled = !busy && operator.isNotBlank() && tasks.all { completed[it.id] == true }, onClick = {
+            busy = true
+            scope.launch {
+                try {
+                    val id = repository.begin(asset, operator, tasks)
+                    for (task in tasks) repository.completeTask(id, task.id, evidence)
+                    repository.submit(id)
+                    completed.clear()
+                    pending = repository.pending().size
+                    status = "Inspeção $id salva no dispositivo."
+                } catch (error: Exception) { status = error.message ?: "Falha ao salvar" }
+                finally { busy = false }
             }
-        ) { Text("Submit inspection") }
+        }) { Text("Salvar inspeção") }
+        OutlinedTextField(token, { token = it }, label = { Text("Token da sessão Supabase") }, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
+        Button(enabled = !busy && token.isNotBlank() && pending > 0, onClick = {
+            busy = true
+            scope.launch {
+                try {
+                    val delivery = ArchiveDelivery(token)
+                    for (row in repository.pending()) {
+                        check(delivery.send(row.id, row.eventType, row.payload)) { "Servidor não confirmou o registro" }
+                        repository.acknowledge(listOf(row.id))
+                    }
+                    status = "Eventos sincronizados."
+                } catch (error: Exception) { status = error.message ?: "Falha de conexão" }
+                finally { pending = repository.pending().size; busy = false }
+            }
+        }) { Text("Sincronizar $pending eventos") }
         Text(status)
     }
 }
