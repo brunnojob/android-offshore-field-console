@@ -1,0 +1,13 @@
+name: Swift inspection core
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  swift:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift --version
+      - run: swiftc -swift-version 6 -parse-as-library ios/Sources/*.swift ios/Tests/StoreChecks.swift -o inspection-checks
+      - run: ./inspection-checks
