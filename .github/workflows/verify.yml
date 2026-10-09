@@ -19,8 +19,11 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "9.6.0"
+      - run: sdkmanager "platforms;android-37.2"
       - run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
       - run: python -m unittest discover -s cloud
