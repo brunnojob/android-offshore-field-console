@@ -1,26 +1,30 @@
 # Offshore Field Console
 
-Aplicativo Android para inspeções com checklist obrigatório, referência de evidência, banco Room e sincronização autenticada de eventos.
+An Android inspection application with required checklists, evidence references, a Room database, and authenticated event synchronization.
 
-## Executar
+## Run
 
-Requisitos: Android SDK, Kotlin e Jetpack Compose.
+Requirements: Android SDK, Kotlin, and Jetpack Compose.
 
 ```sh
 gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
-## Funcionamento
+## Behavior
 
-A interface registra os dados informados pelo operador e conserva os eventos offline. Configure a sessão pelo token do arquivo de operações. Envios exigem HTTPS e confirmação de persistência. `ArchiveWorkerFactory` permite integrar WorkManager com um provedor de sessão. A execução em dispositivo ainda precisa de validação.
+The interface records operator-supplied data and retains events offline. Configure the session using an operations archive token. Delivery requires HTTPS and persistence confirmation. `ArchiveWorkerFactory` integrates WorkManager with a session provider. Device execution still requires validation.
 
-## Persistência de resultados
+## Result synchronization
 
-O arquivo de operações está em [vercel-home-telemetry-api.vercel.app](https://vercel-home-telemetry-api.vercel.app/laboratory.html?project=android-offshore-field-console). As migrações Supabase estão no [repositório da API](https://github.com/brunnojob/vercel-home-telemetry-api/tree/main/supabase/migrations).
+The [operations archive](https://vercel-home-telemetry-api.vercel.app/laboratory.html?project=android-offshore-field-console) stores execution results. Supabase migrations are in the [API repository](https://github.com/brunnojob/vercel-home-telemetry-api/tree/main/supabase/migrations).
 
 ```sh
-python cloud/sync.py enqueue resultado.json --project android-offshore-field-console
+python cloud/sync.py enqueue result.json --project android-offshore-field-console
 python cloud/sync.py sync
 ```
 
-Defina `BRUNNODEV_ACCESS_TOKEN` com sua sessão. A fila SQLite conserva os relatórios até confirmação do servidor; o mesmo conteúdo não gera registros duplicados. Tokens não são gravados no código.
+Set `BRUNNODEV_ACCESS_TOKEN` to your session token. The SQLite outbox retains reports until the server confirms persistence; identical content does not create duplicate records. Tokens are not stored in source code. To run the synchronization tests:
+
+```sh
+python -m unittest discover -s cloud
+```
