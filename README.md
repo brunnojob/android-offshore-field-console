@@ -34,6 +34,6 @@ Contribution trailer: `Co-authored-by: nyctophile <329826984+ineedfoundmyway@use
 
 ![Recorded program execution](docs/proof/execution.svg)
 
-[Verified run](https://github.com/brunnojob/android-offshore-field-console/actions/runs/38017489060) · [Execution report](docs/proof/evidence.json)
+[Verified run](https://github.com/brunnojob/android-offshore-field-console/actions/runs/38017970611) · [Execution report](docs/proof/evidence.json)
 
 Run `python .proof/record.py` after installing the prerequisites above. The scenarios execute repository code and verify exit codes and expected output. CI publishes `execution-proof` with the transcript, input fingerprints and source commit. The downloadable report identifies the exact tested version; the workflow badge tracks the latest run.

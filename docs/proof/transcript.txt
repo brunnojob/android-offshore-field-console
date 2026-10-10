@@ -25,9 +25,9 @@ Daemon will be stopped at the end of the build
 > Task :app:processDebugNavigationResources
 > Task :app:parseDebugLocalResources
 > Task :app:javaPreCompileDebug
+> Task :app:generateDebugRFile
 > Task :app:checkDebugAarMetadata
 > Task :app:mapDebugSourceSetPaths
-> Task :app:generateDebugRFile
 > Task :app:compileDebugNavigationResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
@@ -59,24 +59,24 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:mergeExtDexDebug
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac NO-SOURCE
-> Task :app:bundleDebugClassesToCompileJar
 > Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
 > Task :app:processDebugJavaRes
 > Task :app:kspDebugUnitTestKotlin SKIPPED
 > Task :app:compileDebugUnitTestKotlin
+> Task :app:mergeDebugJavaResource
 > Task :app:dexBuilderDebug
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes
-> Task :app:mergeDebugJavaResource
 > Task :app:testDebugUnitTest
 > Task :app:mergeProjectDexDebug
 > Task :app:packageDebug
 > Task :app:createDebugApkListingFileRedirect
 > Task :app:assembleDebug
 w: Detected multiple Kotlin daemon sessions at 
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1791599722258.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1791600212102.json
 
-BUILD SUCCESSFUL in 34s
+BUILD SUCCESSFUL in 44s
 43 actionable tasks: 43 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.6.0/userguide/configuration_cache_enabling.html
 
