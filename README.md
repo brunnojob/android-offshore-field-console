@@ -26,7 +26,7 @@ Original source and documentation are MIT licensed; see [LICENSE](LICENSE). Thir
 
 The [native Swift inspection store](ios/README.md) adds an actor-isolated file store, optimistic revisions, a durable delivery queue, bounded retries and exact receipt matching. The Android application remains implemented in Kotlin. Swift checks run in the macOS workflow; neither implementation is hosted as a mobile runtime on Netlify.
 
-Contribution trailer: `Co-authored-by: nyctophile <329826984+ineedfoundmyway@users.noreply.github.com>`.
+Contribution trailer: `Co-authored-by: nyctophile <33561761+ineedfoundmyway@users.noreply.github.com>`.
 
 ## Execution proof
 
