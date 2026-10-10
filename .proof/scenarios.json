@@ -1,0 +1,44 @@
+{
+  "repository": "brunnojob/android-offshore-field-console",
+  "inputs": [
+    ".proof/scenarios.json",
+    ".proof/junit.py"
+  ],
+  "cases": [
+    {
+      "name": "sdkmanager \"platforms;android-37.2\"",
+      "argv": [
+        "bash",
+        "-e",
+        "-o",
+        "pipefail",
+        "-c",
+        "sdkmanager \"platforms;android-37.2\""
+      ],
+      "timeout": 900,
+      "display": false
+    },
+    {
+      "name": "gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon",
+      "argv": [
+        "bash",
+        "-e",
+        "-o",
+        "pipefail",
+        "-c",
+        "gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon"
+      ],
+      "timeout": 900,
+      "display": true
+    },
+    {
+      "name": "Read actual Android domain-test execution reports",
+      "argv": [
+        "python",
+        ".proof/junit.py"
+      ],
+      "contains": [],
+      "timeout": 120
+    }
+  ]
+}
